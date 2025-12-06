@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kỷ Niệm Của Chúng Ta</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #667eea;
+        }
+        .header h1 {
+            color: #764ba2;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .photo-card {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        .photo-card:hover {
+            transform: translateY(-10px);
+        }
+        .photo-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+        .photo-caption {
+            padding: 1rem;
+            background: #f8f9fa;
+        }
+        .photo-caption h3 {
+            color: #764ba2;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .photo-caption p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .message-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            border-left: 4px solid #764ba2;
+        }
+        .message-box h2 {
+            color: #764ba2;
+            margin-bottom: 1rem;
+        }
+        .message-box p {
+            color: #333;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💝 Kỷ niệm dành cho {recipientName}</h1>
+            <p class="subtitle">Được tạo với yêu thương từ {productName}</p>
+        </div>
+        <div class="gallery" id="gallery">
+            <!-- Photos will be inserted here -->
+        </div>
+        <div class="message-box">
+            <h2>💌 Lời nhắn</h2>
+            <p>{message}</p>
+        </div>
+    </div>
+</body>
+</html>

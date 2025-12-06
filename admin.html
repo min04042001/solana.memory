@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Solana.Memory</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="icon" href="https://i.ibb.co/4Z5vM0Z/doodle-heart.png">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        .table-container {
+            background-color: var(--card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .products-table th, .products-table td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--bg);
+            vertical-align: middle;
+        }
+        .products-table th {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+        .products-table td {
+            color: var(--text);
+        }
+        .products-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .products-table .product-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .products-table .product-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .products-table .product-name {
+            font-weight: 600;
+        }
+        .products-table .actions-cell {
+            text-align: right;
+        }
+        .products-table .actions-cell .btn {
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="loginSection" class="login-section">
+        <div class="login-container">
+            <h1>Admin Dashboard</h1>
+            <p>Đăng nhập để quản lý hệ thống</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="Nhập email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" id="password" required placeholder="Nhập mật khẩu">
+                </div>
+                <div id="loginError" class="error-message"></div>
+                <button type="submit" class="btn btn-primary btn-full" id="loginBtn">Đăng nhập</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Section -->
+    <div id="adminSection" class="admin-section">
+        <!-- Header -->
+        <div class="admin-header">
+            <h1>Solana.Memory Admin</h1>
+            <button id="logoutBtn" class="btn btn-secondary">Đăng xuất</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="orders">
+                Tất cả đơn
+            </button>
+            <button class="tab-btn" data-tab="products" id="productsTab">
+                Quản lý sản phẩm
+            </button>
+            <button class="tab-btn" data-tab="gift-orders" id="giftOrdersTab">
+                Đơn hàng Gift
+            </button>
+            <button class="tab-btn" data-tab="revenue" id="revenueTab">
+                Doanh thu
+            </button>
+            <button class="tab-btn" data-tab="theme" id="themeTab">
+                Theme
+            </button>
+            <button class="tab-btn" data-tab="templates" id="templatesTab">
+                Templates
+            </button>
+        </div>
+
+        <!-- Content Container -->
+        <div class="content-container">
+            <!-- Orders View -->
+            <div id="ordersView" class="tab-content active">
+                <div class="sub-tabs-container" style="margin-bottom: 2rem;">
+                    <button class="sub-tab-btn active" data-order-type="memory">
+                        Đơn kỷ niệm
+                    </button>
+                    <button class="sub-tab-btn" data-order-type="gift">
+                        Đơn quà tặng
+                    </button>
+                </div>
+                <div id="ordersGrid" class="orders-grid">
+                    <p class="loading-text">Đang tải đơn hàng...</p>
+                </div>
+            </div>
+
+            <!-- Products View -->
+            <div id="productsView" class="tab-content">
+                <div class="section-header">
+                    <h2>Quản lý sản phẩm</h2>
+                    <button class="btn btn-primary" id="addProductBtn">
+                        + Thêm sản phẩm
+                    </button>
+                </div>
+                <div id="productsGrid" class="table-container">
+                    <p class="loading-text">Đang tải sản phẩm...</p>
+                </div>
+            </div>
+
+            <!-- Gift Orders View -->
+            <div id="giftOrdersView" class="tab-content">
+                <div class="section-header">
+                    <h2>Đơn hàng Gift</h2>
+                </div>
+                <div id="giftOrdersGrid" class="orders-grid">
+                    <p class="loading-text">Đang tải đơn hàng...</p>
+                </div>
+            </div>
+
+            <!-- Revenue View -->
+            <div id="revenueView" class="tab-content">
+                <div class="section-header">
+                    <h2>Báo cáo doanh thu</h2>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <select id="monthFilter" class="form-control" style="width: auto; padding: 0.5rem 1rem;">
+                            <!-- Options will be populated by JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Current Month Stats -->
+                <div id="currentMonthStats" class="stats-grid" style="margin-bottom: 2rem;">
+                    <!-- Stats will be populated by JS -->
+                </div>
+
+                <!-- Revenue Chart/List -->
+                <div style="background: var(--card); border-radius: 12px; padding: 2rem; box-shadow: var(--shadow); margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--text);">Chi tiết đơn hàng</h3>
+                    <div id="revenueOrdersList"></div>
+                </div>
+
+                <!-- Monthly History -->
+                <div style="background: var(--card); border-radius: 12px; padding: 2rem; box-shadow: var(--shadow);">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--text);">Lịch sử theo tháng</h3>
+                    <div id="monthlyHistory"></div>
+                </div>
+            </div>
+
+            <!-- Theme View -->
+            <div id="themeView" class="tab-content">
+                <div class="section-header">
+                    <h2>Chọn giao diện website</h2>
+                </div>
+
+                <div class="theme-options">
+                    <div class="theme-option" data-theme="spring">
+                        <h3>🌸 Xuân</h3>
+                        <div style="display: flex; gap: 0.5rem; justify-content: center; margin: 1rem 0;">
+                            <div style="width: 30px; height: 30px; background: #ff6b9d; border-radius: 6px;"></div>
+                            <div style="width: 30px; height: 30px; background: #fff0f6; border-radius: 6px;"></div>
+                            <div style="width: 30px; height: 30px; background: #98d8c8; border-radius: 6px;"></div>
+                        </div>
+                        <p style="font-size: 0.875rem; color: var(--text-light);">Hồng nhạt, tươi sáng</p>
+                    </div>
+
+                    <div class="theme-option" data-theme="summer">
+                        <h3>☀️ Hạ</h3>
+                        <div style="display: flex; gap: 0.5rem; justify-content: center; margin: 1rem 0;">
+                            <div style="width: 30px; height: 30px; background: #ffa726; border-radius: 6px;"></div>
+                            <div style="width: 30px; height: 30px; background: #fff8e1; border-radius: 6px;"></div>
+                            <div style="width: 30px; height: 30px; background: #4fc3f7; border-radius: 6px;"></div>
+                        </div>
+                        <p style="font-size: 0.875rem; color: var(--text-light);">Cam vàng, ấm áp</p>
+                    </div>
+
+                    <div class="theme-option" data-theme="autumn">
+                        <h3>🍂 Thu</h3>
+                        <div style="display: flex; gap: 0.5rem; justify-content: center; margin: 1rem 0;">
+                            <div style="width: 30px; height: 30px; background: #ff7043; border-radius: 6px;"></div>
+                            <div style="width: 30px; height: 30px; background: #fff3e0; border-radius: 6px;"></div>
+                            <div style="width: 30px; height: 30px; background: #795548; border-radius: 6px;"></div>
+                        </div>
+                        <p style="font-size: 0.875rem; color: var(--text-light);">Cam đỏ, trầm ấm</p>
+                    </div>
+
+                    <div class="theme-option" data-theme="winter">
+                        <h3>❄️ Đông</h3>
+                        <div style="display: flex; gap: 0.5rem; justify-content: center; margin: 1rem 0;">
+                            <div style="width: 30px; height: 30px; background: #42a5f5; border-radius: 6px;"></div>
+                            <div style="width: 30px; height: 30px; background: #e3f2fd; border-radius: 6px;"></div>
+                            <div style="width: 30px; height: 30px; background: #90caf9; border-radius: 6px;"></div>
+                        </div>
+                        <p style="font-size: 0.875rem; color: var(--text-light);">Xanh dương, trong trẻo</p>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem; padding: 1.5rem; background: var(--card); border-radius: 12px; box-shadow: var(--shadow);">
+                    <p style="margin-bottom: 1rem; color: var(--text-light);">
+                        Theme hiện tại: <strong id="currentThemeName" style="color: var(--primary); font-size: 1.1rem;">Xuân</strong>
+                    </p>
+                    <button class="btn btn-primary" id="saveThemeBtn">Lưu theme</button>
+                </div>
+            </div>
+
+            <!-- Templates View -->
+            <div id="templatesView" class="tab-content">
+                <div class="section-header">
+                    <h2>Quản lý Templates Kỷ Niệm</h2>
+                </div>
+
+                <div class="templates-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+                    <div class="template-card" data-template="1">
+                        <div class="template-preview" style="height: 200px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                        <h3 style="margin: 1rem 0 0.5rem; color: var(--text);">Template 1 - Classic</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Gradient tím đẹp mắt</p>
+                    </div>
+                    <div class="template-card" data-template="2">
+                        <div class="template-preview" style="height: 200px; border-radius: 12px; overflow: hidden; background: #0f0f0f;"></div>
+                        <h3 style="margin: 1rem 0 0.5rem; color: var(--text);">Template 2 - Modern</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Tối giản đen trắng</p>
+                    </div>
+                    <div class="template-card" data-template="3">
+                        <div class="template-preview" style="height: 200px; border-radius: 12px; overflow: hidden; background: linear-gradient(to bottom, #ffecd2 0%, #fcb69f 100%);"></div>
+                        <h3 style="margin: 1rem 0 0.5rem; color: var(--text);">Template 3 - Romantic</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Hồng ngọt ngào</p>
+                    </div>
+                    <div class="template-card" data-template="4">
+                        <div class="template-preview" style="height: 200px; border-radius: 12px; overflow: hidden; background: #f5f5f5;"></div>
+                        <h3 style="margin: 1rem 0 0.5rem; color: var(--text);">Template 4 - Minimalist</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Tối giản tinh tế</p>
+                    </div>
+                    <div class="template-card" data-template="5">
+                        <div class="template-preview" style="height: 200px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); border: 2px solid #d4af37;"></div>
+                        <h3 style="margin: 1rem 0 0.5rem; color: var(--text);">Template 5 - Elegant</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Sang trọng viền vàng</p>
+                    </div>
+                    <div class="template-card" data-template="6">
+                        <div class="template-preview" style="height: 200px; border-radius: 12px; overflow: hidden; background: linear-gradient(45deg, #ff6b6b, #ee5a6f, #c44569);"></div>
+                        <h3 style="margin: 1rem 0 0.5rem; color: var(--text);">Template 6 - Colorful</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Đầy màu sắc</p>
+                    </div>
+                    <div class="template-card" data-template="7">
+                        <div class="template-preview" style="height: 200px; border-radius: 12px; overflow: hidden; background: #f4e8d8; border: 2px solid #8b7355;"></div>
+                        <h3 style="margin: 1rem 0 0.5rem; color: var(--text);">Template 7 - Nostalgic</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Cổ điển hoài niệm</p>
+                    </div>
+                    <div class="template-card" data-template="8">
+                        <div class="template-preview" style="height: 200px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
+                        <h3 style="margin: 1rem 0 0.5rem; color: var(--text);">Template 8 - Artistic</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Nghệ thuật</p>
+                    </div>
+                    <div class="template-card" data-template="9">
+                        <div class="template-preview" style="height: 200px; border-radius: 12px; overflow: hidden; background: linear-gradient(45deg, #84fab0 0%, #8fd3f4 100%);"></div>
+                        <h3 style="margin: 1rem 0 0.5rem; color: var(--text);">Template 9 - Playful</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Vui nhộn năng động</p>
+                    </div>
+                    <div class="template-card" data-template="10">
+                        <div class="template-preview" style="height: 200px; border-radius: 12px; overflow: hidden; background: #000; border: 2px solid #d4af37;"></div>
+                        <h3 style="margin: 1rem 0 0.5rem; color: var(--text);">Template 10 - Luxury</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Xa hoa sang trọng</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Payment Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Xác nhận thanh toán</h2>
+            </div>
+            <div class="modal-body">
+                <div class="order-detail">
+                    <strong>Sản phẩm:</strong>
+                    <span id="modalProductName"></span>
+                </div>
+                <div class="order-detail">
+                    <strong>Người nhận:</strong>
+                    <span id="modalRecipient"></span>
+                </div>
+                <div class="order-detail">
+                    <strong>Số tiền:</strong>
+                    <span id="modalAmount"></span>
+                </div>
+                <div class="order-detail">
+                    <strong>Nội dung CK:</strong>
+                    <span id="modalPaymentContent"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" id="confirmPaymentBtn">Xác nhận</button>
+                <button class="btn btn-danger" id="rejectPaymentBtn">Từ chối</button>
+                <button class="btn btn-secondary" id="cancelModalBtn">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Order Modal -->
+    <div class="modal" id="deleteOrderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Xác nhận xóa đơn hàng</h2>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa đơn hàng này?</p>
+                <p style="color: var(--danger); font-weight: 600; margin-top: 1rem;">
+                    ⚠️ Hành động này không thể hoàn tác!
+                </p>
+                <p style="margin-top: 0.5rem;">
+                    <strong>ID:</strong> <span id="deleteOrderId"></span>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="confirmDeleteOrderBtn">Xóa</button>
+                <button class="btn btn-secondary" id="cancelDeleteOrderBtn">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="productModalTitle">Thêm sản phẩm mới</h2>
+            </div>
+            <form id="productForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Loại sản phẩm *</label>
+                        <select id="productCollection" required>
+                            <option value="gifts">Gift (Quà tặng)</option>
+                            <option value="memories_products">Memory (Kỷ niệm)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tên sản phẩm *</label>
+                        <input type="text" id="productName" required placeholder="Nhập tên sản phẩm">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Giá (VNĐ) *</label>
+                        <input type="number" id="productPrice" required placeholder="150000">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hình ảnh sản phẩm *</label>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0.5rem;">
+                                <input type="radio" name="imageInputType" value="upload" checked style="width: auto;">
+                                <span>Tải ảnh lên</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="radio" name="imageInputType" value="url" style="width: auto;">
+                                <span>Dùng URL</span>
+                            </label>
+                        </div>
+
+                        <div id="imageUploadContainer">
+                            <input type="file" id="productImageFile" accept="image/*" style="width: 100%; padding: 0.8rem; border: 2px dashed var(--border); border-radius: 8px; background: var(--background); color: var(--text);">
+                            <div id="imagePreview" style="margin-top: 1rem; display: none;">
+                                <img id="previewImg" style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;">
+                            </div>
+                        </div>
+
+                        <div id="imageUrlContainer" style="display: none;">
+                            <input type="url" id="productImage" placeholder="https://i.ibb.co/...">
+                            <small style="color: var(--text-light); display: block; margin-top: 0.25rem;">
+                                Dán link ảnh từ imgbb.com hoặc imgur.com
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hiệu ứng *</label>
+                        <select id="productEffect" required>
+                            <option value="love">Tỏ Tình (Love)</option>
+                            <option value="mothers_day">Ngày của Mẹ (Mother's Day)</option>
+                            <option value="birthday">Sinh Nhật (Birthday)</option>
+                            <option value="anniversary">Kỷ Niệm (Anniversary)</option>
+                            <option value="graduation">Tốt Nghiệp (Graduation)</option>
+                            <option value="thank_you">Cảm Ơn (Thank You)</option>
+                            <option value="custom_1">Custom Animation 1</option>
+                            <option value="custom_2">Custom Animation 2</option>
+                        </select>
+                        <small style="color: var(--text-light); display: block; margin-top: 0.25rem;">
+                            Hiệu ứng sẽ hiển thị khi khách hàng quét QR code
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="productAllowImageUpload" style="width: auto;">
+                            <span>Cho phép tải ảnh lên</span>
+                        </label>
+                        <small style="color: var(--text-light); display: block; margin-top: 0.25rem;">
+                            Nếu chọn, khách hàng có thể tải ảnh lên khi đặt hàng
+                        </small>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                    <button type="button" class="btn btn-secondary" id="cancelProductBtn">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Product Modal -->
+    <div class="modal" id="deleteProductModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Xác nhận xóa sản phẩm</h2>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa sản phẩm này?</p>
+                <p style="color: var(--danger); font-weight: 600; margin-top: 1rem;">
+                    ⚠️ Hành động này không thể hoàn tác!
+                </p>
+                <p style="margin-top: 0.5rem;">
+                    <strong>Tên:</strong> <span id="deleteProductName"></span>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="confirmDeleteProductBtn">Xóa</button>
+                <button class="btn btn-secondary" id="cancelDeleteProductBtn">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="admin.tsx"></script>
+</body>
+</html>

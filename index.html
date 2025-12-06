@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana.Memory - Kỷ Niệm & Quà Tặng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" href="https://i.ibb.co/4Z5vM0Z/doodle-heart.png">
+    <!-- Load Firebase v8 SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <!-- Load QRCode.js -->
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+</head>
+<body>
+    <!-- Floating Stickers -->
+    <div class="floating-stickers">
+        <div class="sticker sticker-1"></div>
+        <div class="sticker sticker-2"></div>
+        <div class="sticker sticker-3"></div>
+        <div class="sticker sticker-4"></div>
+        <div class="sticker sticker-5"></div>
+        <div class="sticker sticker-6"></div>
+    </div>
+
+    <!-- Admin Dot (Hidden, for quick access) -->
+    <div id="adminDot" style="position: fixed; bottom: 10px; left: 10px; width: 20px; height: 20px; background: transparent; z-index: 9999; cursor: pointer;"></div>
+
+    <header class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Solana<span class="dot-admin" style="cursor: pointer; display: inline-block;" title="Admin">.</span>Memory</h1>
+            <p class="hero-subtitle">Nơi lưu giữ những kỷ niệm ngọt ngào và trao gửi yêu thương</p>
+            <div class="hero-actions">
+                <button class="hero-scroll-btn">
+                    Khám phá ngay <span class="arrow-down">↓</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="gift">Tạo Kỷ Niệm</button>
+            <button class="tab-btn" data-tab="memory">Đặt Quà Tặng</button>
+        </div>
+
+        <div class="product-grid">
+            <!-- Products will be loaded here by JavaScript -->
+        </div>
+
+        <!-- Gift Order Section -->
+        <section id="giftOrderSection" class="order-section">
+            <div class="order-container">
+                <h2 id="orderTitle">Đặt Quà Tặng: <span id="giftOrderProductName"></span></h2>
+                <p class="form-description">Vui lòng điền thông tin để chúng tôi giao quà đến bạn.</p>
+                <form id="giftOrderForm">
+                    <div class="form-group">
+                        <label for="customerName">Tên của bạn:</label>
+                        <input type="text" id="customerName" name="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerPhone">Số điện thoại:</label>
+                        <input type="tel" id="customerPhone" name="customerPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerAddress">Địa chỉ nhận hàng:</label>
+                        <textarea id="customerAddress" name="customerAddress" rows="3" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="sticker-btn submit-order-btn">Đặt hàng ngay</button>
+                        <button type="button" class="sticker-btn cancel-order-btn" id="cancelGiftOrderBtn">Hủy</button>
+                    </div>
+                </form>
+                <div id="giftOrderSuccessMessage" class="success-message">
+                    <span class="sticker-icon">💖</span>
+                    <h2>Đặt hàng thành công!</h2>
+                    <p>Cảm ơn bạn đã tin tưởng Solana.Memory. Chúng tôi sẽ liên hệ xác nhận trong thời gian sớm nhất.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Memory Creation Section -->
+        <section id="memorySection" class="order-section">
+            <div class="order-container">
+                <h2 id="memoryTitle">Tạo Kỷ Niệm: <span id="memoryProductName"></span></h2>
+                <p class="form-description">Hãy gửi gắm những lời yêu thương và hình ảnh đẹp nhất của bạn.</p>
+                <form id="memoryForm">
+                    <div class="form-group">
+                        <label for="recipientName">Tên người nhận:</label>
+                        <input type="text" id="recipientName" name="recipientName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Lời nhắn của bạn:</label>
+                        <textarea id="message" name="message" rows="5" placeholder="Viết lời nhắn kỷ niệm của bạn tại đây..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="imageUpload" class="upload-label">
+                            Chọn ảnh (tối đa 5 ảnh)
+                            <input type="file" id="imageUpload" name="imageUpload" accept="image/*" multiple>
+                        </label>
+                        <span id="fileName" class="file-name-display">Chưa có ảnh nào được chọn</span>
+                        <div id="imagePreviewContainer" class="image-preview-container">
+                            <!-- Image previews will be displayed here -->
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="sticker-btn submit-order-btn">Tiếp tục thanh toán</button>
+                        <button type="button" class="sticker-btn cancel-order-btn" id="cancelMemoryBtn">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal-content payment-modal-new">
+            <div class="payment-header">
+                <div class="payment-hint">
+                    💡 Mở App Ngân hàng bất kỳ để <strong>quét mã VietQR</strong> hoặc <strong>chuyển khoản</strong> chính xác số tiền bên dưới
+                </div>
+            </div>
+
+            <div class="payment-body">
+                <div class="payment-qr-section">
+                    <div class="vietqr-brand">
+                        <img src="https://vietqr.io/img/VietQR_logo.png" alt="VietQR PRO" style="height: 40px;">
+                        <span class="pro-badge">PRO</span>
+                    </div>
+                    <img id="vietQrImage" src="" alt="VietQR Code" class="payment-qr-code">
+                    <div class="payment-banks">
+                        <img src="https://api.vietqr.io/img/NAPAS.png" alt="NAPAS" style="height: 24px;">
+                        <img src="https://api.vietqr.io/img/MB.png" alt="MB" style="height: 24px;">
+                    </div>
+                </div>
+
+                <div class="payment-info-section">
+                    <div class="bank-logo">
+                        <img src="https://api.vietqr.io/img/MB.png" alt="MB Bank" style="width: 48px; height: 48px; border-radius: 50%;">
+                    </div>
+                    <div class="bank-name">
+                        Ngân hàng<br>
+                        <strong>Ngân hàng TMCP Quân đội</strong>
+                    </div>
+
+                    <div class="payment-detail-row">
+                        <div class="detail-label">Chủ tài khoản:</div>
+                        <div class="detail-value">
+                            <strong id="accountName">DO VAN DOAN</strong>
+                            <button class="copy-btn" onclick="copyToClipboard('DO VAN DOAN', this)">Sao chép</button>
+                        </div>
+                    </div>
+
+                    <div class="payment-detail-row">
+                        <div class="detail-label">Số tài khoản:</div>
+                        <div class="detail-value">
+                            <strong id="accountNumber">9666989889</strong>
+                            <button class="copy-btn" onclick="copyToClipboard('9666989889', this)">Sao chép</button>
+                        </div>
+                    </div>
+
+                    <div class="payment-detail-row">
+                        <div class="detail-label">Số tiền:</div>
+                        <div class="detail-value">
+                            <strong id="paymentAmount" class="amount-highlight"></strong>
+                            <button class="copy-btn" id="copyAmountBtn">Sao chép</button>
+                        </div>
+                    </div>
+
+                    <div class="payment-detail-row">
+                        <div class="detail-label">Nội dung:</div>
+                        <div class="detail-value">
+                            <strong id="paymentContent"></strong>
+                            <button class="copy-btn" id="copyContentBtn">Sao chép</button>
+                        </div>
+                    </div>
+
+                    <div class="payment-note">
+                        Lưu ý: Nhập chính xác số tiền <strong id="paymentAmountNote"></strong> khi chuyển khoản
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-footer">
+                <p class="payment-status">⏳ Đang chờ xác nhận thanh toán...</p>
+                <button type="button" class="sticker-btn cancel-order-btn" id="cancelPaymentBtn">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Waiting Approval Modal -->
+    <div id="waitingApprovalModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="modal-title">Đang chờ xác nhận...</h2>
+            <p class="modal-info-text">Chúng tôi đang chờ admin xác nhận thanh toán của bạn. Quá trình này có thể mất vài phút.</p>
+            <div class="waiting-spinner-container">
+                <div class="spinner"></div>
+                <span>Vui lòng chờ...</span>
+            </div>
+            <p class="modal-info-text" style="margin-top: 2rem; font-size: 0.95rem;">
+                Bạn có thể đóng cửa sổ này, chúng tôi sẽ thông báo khi đơn hàng được duyệt.
+            </p>
+        </div>
+    </div>
+
+    <!-- Payment Rejected Modal -->
+    <div id="paymentRejectedModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="modal-error-title">Thanh toán bị từ chối! 😔</h2>
+            <p class="modal-info-text">
+                Rất tiếc, chúng tôi không thể xác nhận giao dịch của bạn.
+                Vui lòng kiểm tra lại thông tin chuyển khoản hoặc liên hệ hỗ trợ.
+            </p>
+            <div class="contact-info-box">
+                <p class="contact-info-heading">Liên hệ hỗ trợ:</p>
+                <p class="contact-phone">09666989889</p>
+                <p class="contact-note">Vui lòng cung cấp nội dung chuyển khoản để được hỗ trợ nhanh nhất.</p>
+            </div>
+            <button type="button" class="sticker-btn submit-order-btn" id="closeRejectedBtn">Đã hiểu</button>
+        </div>
+    </div>
+
+    <!-- QR Customization Modal -->
+    <div id="qrCustomModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2 class="modal-title">Tùy chỉnh Mã QR của bạn</h2>
+            <p class="modal-info-text">Hãy biến mã QR thành một tác phẩm nghệ thuật độc đáo!</p>
+
+            <div class="qr-preview-container">
+                <h3 class="qr-preview-heading">Xem trước Mã QR</h3>
+                <div class="qr-preview-wrapper">
+                    <div id="qrPreview" style="width: 200px; height: 200px; margin: 0 auto;"></div>
+                </div>
+                <p id="qrMessagePreview" class="qr-message-preview"></p>
+            </div>
+
+            <div class="qr-theme-section">
+                <label class="form-label">Chọn Theme màu QR:</label>
+                <div class="grid-3-col">
+                    <label class="theme-preset-option active">
+                        <input type="radio" name="qrThemePreset" value="classic" checked>
+                        <span class="preset-icon">💖</span>
+                        <span class="preset-name">Classic</span>
+                    </label>
+                    <label class="theme-preset-option">
+                        <input type="radio" name="qrThemePreset" value="romantic">
+                        <span class="preset-icon">🌹</span>
+                        <span class="preset-name">Romantic</span>
+                    </label>
+                    <label class="theme-preset-option">
+                        <input type="radio" name="qrThemePreset" value="modern">
+                        <span class="preset-icon">💎</span>
+                        <span class="preset-name">Modern</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="qr-theme-section">
+                <label for="qrCustomMessage" class="form-label">Tin nhắn trang trí (tùy chọn):</label>
+                <textarea id="qrCustomMessage" rows="2" maxlength="50" placeholder="Ví dụ: 'Mãi yêu em!' hoặc 'Kỷ niệm của chúng ta'"></textarea>
+                <span class="input-hint">Tối đa 50 ký tự. Sẽ hiển thị bên dưới mã QR.</span>
+            </div>
+
+            <div class="qr-theme-section">
+                <label for="qrCustomDomain" class="form-label">Tên miền tùy chỉnh (tùy chọn):</label>
+                <input type="url" id="qrCustomDomain" placeholder="https://yourdomain.com" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--background-color); color: var(--text-color); font-size: 0.95rem;">
+                <span class="input-hint">Để trống sẽ sử dụng tên miền mặc định. Ví dụ: https://yourdomain.com</span>
+            </div>
+
+            <div class="form-actions" style="margin-top: 3rem;">
+                <button type="button" class="sticker-btn submit-order-btn" id="applyQrCustomBtn">Hoàn tất & Tạo QR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final QR Modal -->
+    <div id="finalQrModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="modal-title">Mã QR của bạn đã sẵn sàng!</h2>
+            <p class="modal-info-text">Đây là mã QR kỷ niệm của bạn. Bạn có thể lưu lại hoặc chia sẻ.</p>
+            <div id="finalQrCode" class="qr-code-image">
+                <!-- Final QR code will be rendered here -->
+            </div>
+            <p class="modal-info-text" style="font-size: 0.95rem; margin-top: 1.5rem;">
+                Quét mã này để xem kỷ niệm của bạn!
+            </p>
+            <div class="final-qr-actions">
+                <button type="button" class="sticker-btn save-qr-btn" id="saveQrBtn">Tải ảnh QR</button>
+                <button type="button" class="sticker-btn close-qr-btn" id="closeFinalQrBtn">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Viewer Modal -->
+    <div id="imageViewerModal" class="modal-overlay">
+        <div class="image-viewer-content">
+            <button class="close-viewer-btn" id="closeViewerBtn">&times;</button>
+            <img id="viewerImage" src="" alt="Image Viewer">
+        </div>
+    </div>
+
+    <script type="module" src="index.tsx"></script>
+</body>
+</html>

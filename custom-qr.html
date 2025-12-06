@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tùy Chỉnh QR Code - Solana.Memory</title>
+    <link rel="icon" href="https://i.ibb.co/4Z5vM0Z/doodle-heart.png">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 0.25rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .qr-result {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .qr-result.show {
+            display: block;
+        }
+
+        .qr-result img {
+            max-width: 300px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .qr-result .url {
+            background: var(--background);
+            padding: 1rem;
+            border-radius: 8px;
+            word-break: break-all;
+            margin: 1rem 0;
+            font-family: monospace;
+            color: var(--primary);
+        }
+
+        .qr-result .buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .qr-result .buttons .btn {
+            width: auto;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .qr-result .buttons {
+                flex-direction: column;
+            }
+
+            .qr-result .buttons .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Tùy Chỉnh QR Code</h1>
+            <p>Tạo QR code cá nhân hóa cho sản phẩm của bạn</p>
+        </div>
+
+        <div class="card">
+            <div id="alertContainer"></div>
+
+            <form id="customQRForm">
+                <div class="form-group">
+                    <label>Mã Đơn Hàng *</label>
+                    <input type="text" id="orderId" required placeholder="Nhập mã đơn hàng của bạn">
+                    <small>Mã đơn hàng bạn nhận được sau khi thanh toán</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Slug (URL cá nhân hóa) *</label>
+                    <input type="text" id="slug" required placeholder="ten-nguoi-nhan" pattern="[a-z0-9-]+" maxlength="32">
+                    <small>Chỉ dùng chữ thường, số và dấu gạch ngang (-). Tối đa 32 ký tự</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Lời Nhắn / Mô Tả</label>
+                    <textarea id="message" rows="4" placeholder="Nhập lời nhắn của bạn..."></textarea>
+                    <small>Lời nhắn sẽ hiển thị khi người nhận quét QR code</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Template (Chỉ cho Memory)</label>
+                    <select id="templateId">
+                        <option value="1">Template 1 - Classic</option>
+                        <option value="2">Template 2 - Modern</option>
+                        <option value="3">Template 3 - Romantic</option>
+                        <option value="4">Template 4 - Minimalist</option>
+                        <option value="5">Template 5 - Elegant</option>
+                        <option value="6">Template 6 - Colorful</option>
+                        <option value="7">Template 7 - Nostalgic</option>
+                        <option value="8">Template 8 - Artistic</option>
+                        <option value="9">Template 9 - Playful</option>
+                        <option value="10">Template 10 - Luxury</option>
+                    </select>
+                    <small>Giao diện hiển thị khi quét QR code</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    Tạo QR Code
+                </button>
+            </form>
+
+            <div class="loading" id="loadingDiv">
+                <div class="spinner"></div>
+                <p>Đang tạo QR code...</p>
+            </div>
+
+            <div class="qr-result" id="qrResult">
+                <h2 style="margin-bottom: 1rem; color: var(--text);">QR Code của bạn đã sẵn sàng!</h2>
+                <img id="qrImage" src="" alt="QR Code">
+                <div class="url" id="productUrl"></div>
+                <p style="color: var(--text-secondary); margin: 1rem 0;">
+                    Lưu QR code này hoặc chia sẻ link cho người nhận
+                </p>
+                <div class="buttons">
+                    <button class="btn btn-primary" onclick="downloadQR()">
+                        Tải QR Code
+                    </button>
+                    <button class="btn" style="background: var(--text-secondary); color: white;" onclick="resetForm()">
+                        Tạo QR Mới
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/custom-qr.tsx"></script>
+</body>
+</html>

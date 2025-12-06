@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artistic Memories</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Brush Script MT', cursive;
+            background: #f0f0f0;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 920px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            position: relative;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.3)"/><circle cx="90" cy="20" r="3" fill="rgba(255,255,255,0.2)"/><circle cx="30" cy="90" r="2.5" fill="rgba(255,255,255,0.25)"/><circle cx="70" cy="80" r="2" fill="rgba(255,255,255,0.3)"/><circle cx="50" cy="50" r="1.5" fill="rgba(255,255,255,0.2)"/></svg>');
+            background-size: 50px 50px;
+        }
+        .header h1 {
+            color: #fff;
+            font-size: 3rem;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+        .subtitle {
+            color: rgba(255,255,255,0.95);
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        .gallery {
+            padding: 3rem 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 2rem;
+        }
+        .photo-card {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 5px solid #fff;
+            outline: 2px solid #fa709a;
+        }
+        .photo-card img {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .photo-card:hover img {
+            transform: scale(1.15) rotate(3deg);
+        }
+        .photo-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+        }
+        .photo-caption h3 {
+            color: #fee140;
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+            font-family: 'Arial', sans-serif;
+        }
+        .photo-caption p {
+            color: #f0f0f0;
+            font-size: 0.85rem;
+            font-family: 'Arial', sans-serif;
+        }
+        .message-box {
+            margin: 0 2rem 3rem;
+            padding: 2.5rem;
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border-radius: 15px;
+            border: 3px solid #fa709a;
+        }
+        .message-box h2 {
+            color: #d63031;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-family: 'Arial', sans-serif;
+        }
+        .message-box p {
+            color: #2d3436;
+            line-height: 1.9;
+            font-size: 1.05rem;
+            font-family: 'Georgia', serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 {recipientName} 🎨</h1>
+            <p class="subtitle">✨ {productName} ✨</p>
+        </div>
+        <div class="gallery" id="gallery">
+            <!-- Photos will be inserted here -->
+        </div>
+        <div class="message-box">
+            <h2>💫 Lời Nhắn Nghệ Thuật</h2>
+            <p>{message}</p>
+        </div>
+    </div>
+</body>
+</html>

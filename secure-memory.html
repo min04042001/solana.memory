@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kỷ niệm</title>
+    <style id="dynamicStyles"></style>
+</head>
+<body>
+    <div class="locked" id="lockScreen">
+        <div class="locked-content">
+            <h2>🔒 Nội dung được bảo vệ</h2>
+            <p>Đang xác thực...</p>
+        </div>
+    </div>
+    <div id="content"></div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        (function() {
+            'use strict';
+            const _0x4a2b=['AIzaSyBMXv_8dYkYf9IvClrIRLK5USdJjD66Qf4','gift-aa09e.firebaseapp.com','gift-aa09e','gift-aa09e.firebasestorage.app','905741943305','1:905741943305:web:8cd498eda1e3c5ad792ed8','memories','contextmenu','keydown','F12','I','J','U'];
+            const CONFIG={apiKey:_0x4a2b[0],authDomain:_0x4a2b[1],projectId:_0x4a2b[2],storageBucket:_0x4a2b[3],messagingSenderId:_0x4a2b[4],appId:_0x4a2b[5]};
+            firebase.initializeApp(CONFIG);
+            const db=firebase.firestore();
+            const urlParams=new URLSearchParams(window.location.search);
+            const token=urlParams.get('t');
+            const orderId=urlParams.get('id');
+            const templateId=parseInt(urlParams.get('tid'))||1;
+
+            if(!token||!orderId){return;}
+
+            const TEMPLATES={
+                1:{name:'Purple Dream',bg:'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',primary:'#667eea',secondary:'#764ba2',animation:'fadeInUp'},
+                2:{name:'Ocean Breeze',bg:'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',primary:'#4facfe',secondary:'#00f2fe',animation:'slideInLeft'},
+                3:{name:'Sunset Glow',bg:'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',primary:'#fa709a',secondary:'#fee140',animation:'zoomIn'},
+                4:{name:'Forest Fresh',bg:'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)',primary:'#0ba360',secondary:'#3cba92',animation:'bounceIn'},
+                5:{name:'Rose Gold',bg:'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',primary:'#f093fb',secondary:'#f5576c',animation:'rotateIn'},
+                6:{name:'Midnight Blue',bg:'linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%)',primary:'#4e54c8',secondary:'#8f94fb',animation:'fadeInDown'},
+                7:{name:'Peach Paradise',bg:'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',primary:'#fcb69f',secondary:'#ffecd2',animation:'slideInRight'},
+                8:{name:'Emerald City',bg:'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)',primary:'#56ab2f',secondary:'#a8e063',animation:'flipInX'},
+                9:{name:'Cherry Blossom',bg:'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)',primary:'#fccb90',secondary:'#d57eeb',animation:'heartBeat'},
+                10:{name:'Arctic Ice',bg:'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)',primary:'#8ec5fc',secondary:'#e0c3fc',animation:'pulse'}
+            };
+
+            const theme=TEMPLATES[templateId]||TEMPLATES[1];
+
+            const styles=`*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:${theme.bg};min-height:100vh;overflow-x:hidden}.locked{position:fixed;top:0;left:0;width:100%;height:100%;background:${theme.bg};display:flex;align-items:center;justify-content:center;z-index:9999}.locked-content{background:white;padding:3rem;border-radius:20px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.4)}.locked-content h2{color:${theme.primary};margin-bottom:1rem;font-size:2rem}.locked-content p{color:#666;font-size:1.1rem}.container{max-width:1200px;padding:2rem;width:100%;margin:0 auto}.header{text-align:center;color:white;margin-bottom:3rem;animation:${theme.animation} 1.2s ease}.header h1{font-size:3rem;margin-bottom:1rem;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}.header .subtitle{font-size:1.3rem;opacity:0.95;margin-top:1rem}.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;margin-bottom:2rem}.photo-card{background:white;border-radius:15px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3);transition:transform 0.3s;animation:${theme.animation} 1s ease}.photo-card:hover{transform:translateY(-10px) scale(1.02)}.photo-card img{width:100%;height:300px;object-fit:cover}.photo-caption{padding:1.5rem;text-align:center}.photo-caption h3{color:${theme.primary};margin-bottom:0.5rem;font-size:1.2rem}.photo-caption p{color:#666;font-size:0.95rem;line-height:1.6}.message-box{background:white;border-radius:15px;padding:2.5rem;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.3);animation:${theme.animation} 1.5s ease}.message-box h2{color:${theme.primary};margin-bottom:1rem;font-size:1.8rem}.message-box p{font-size:1.2rem;color:#333;line-height:1.8;font-style:italic}@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}@keyframes fadeInDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}@keyframes slideInLeft{from{opacity:0;transform:translateX(-50px)}to{opacity:1;transform:translateX(0)}}@keyframes slideInRight{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}@keyframes zoomIn{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}@keyframes bounceIn{0%{opacity:0;transform:scale(0.3)}50%{transform:scale(1.05)}70%{transform:scale(0.9)}100%{opacity:1;transform:scale(1)}}@keyframes rotateIn{from{opacity:0;transform:rotate(-200deg)}to{opacity:1;transform:rotate(0)}}@keyframes flipInX{from{opacity:0;transform:perspective(400px) rotateX(90deg)}to{opacity:1;transform:perspective(400px) rotateX(0)}}@keyframes heartBeat{0%,100%{transform:scale(1)}14%{transform:scale(1.3)}28%{transform:scale(1)}42%{transform:scale(1.3)}70%{transform:scale(1)}}@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}`;
+
+            document.getElementById('dynamicStyles').textContent=styles;
+
+            async function verify(){
+                try{
+                    const doc=await db.collection(_0x4a2b[6]).doc(orderId).get();
+                    if(!doc.exists){
+                        document.getElementById('lockScreen').querySelector('p').textContent='Không tìm thấy kỷ niệm';
+                        return;
+                    }
+                    const data=doc.data();
+                    if(data.accessToken!==token||data.templateId!==templateId||data.status!=='paid'){
+                        document.getElementById('lockScreen').querySelector('p').textContent='Truy cập bị từ chối';
+                        return;
+                    }
+                    document.getElementById('lockScreen').style.display='none';
+                    const recipientName=data.recipientName||'Người thân yêu';
+                    const message=data.message||'Những khoảnh khắc đẹp nhất của chúng ta...';
+                    const html=`<div class="container"><div class="header"><h1>💝 Kỷ niệm dành cho ${recipientName}</h1><p class="subtitle">Được tạo với yêu thương từ ${data.productName||'Solana Memory'}</p></div><div class="gallery" id="gallery"></div><div class="message-box"><h2>💌 Lời nhắn</h2><p>${message}</p></div></div>`;
+                    document.getElementById('content').innerHTML=html;
+                    if(data.imageFileNames&&data.imageFileNames.length>0&&data.imageFileNames[0]!=='Không có ảnh'){
+                        const gallery=document.getElementById('gallery');
+                        data.imageFileNames.forEach((fileName,i)=>{
+                            const imageUrl=`https://via.placeholder.com/400x300/${theme.primary.replace('#','')}/ffffff?text=Ảnh+${i+1}`;
+                            gallery.innerHTML+=`<div class="photo-card"><img src="${imageUrl}" alt="Ảnh ${i+1}" onerror="this.src='https://via.placeholder.com/400x300/667eea/ffffff?text=Ảnh+${i+1}'"><div class="photo-caption"><h3>Khoảnh khắc ${i+1}</h3><p>${fileName}</p></div></div>`;
+                        });
+                    }else{
+                        const gallery=document.getElementById('gallery');
+                        gallery.innerHTML='<div style="grid-column:1/-1;text-align:center;color:white;font-size:1.2rem;padding:2rem">Chưa có hình ảnh nào được tải lên</div>';
+                    }
+                }catch(e){
+                    console.error(e);
+                    document.getElementById('lockScreen').querySelector('p').textContent='Đã có lỗi xảy ra';
+                }
+            }
+            verify();
+            document.addEventListener(_0x4a2b[7],e=>e.preventDefault());
+            document.addEventListener(_0x4a2b[8],e=>{if(e.key===_0x4a2b[9]||(e.ctrlKey&&e.shiftKey&&e.key===_0x4a2b[10])||(e.ctrlKey&&e.shiftKey&&e.key===_0x4a2b[11])||(e.ctrlKey&&e.key===_0x4a2b[12])){e.preventDefault();}});
+            setInterval(()=>{if(window.outerWidth-window.innerWidth>160||window.outerHeight-window.innerHeight>160){document.body.innerHTML='';}},1000);
+            Object.freeze(Object.prototype);
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "Cửa Hàng Quà Tặng",
+  "description": "Một trang web đơn giản để trưng bày các sản phẩm phụ kiện quà tặng.",
+  "files": [
+    "index.html",
+    "index.css",
+    "index.tsx",
+    "memory-viewer.html",
+    "memory-viewer.css",
+    "memory-viewer.tsx"
+  ],
+  "requestFramePermissions": []
+}
